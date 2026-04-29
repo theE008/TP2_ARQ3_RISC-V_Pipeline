@@ -59,40 +59,23 @@ module tb_RISCVCPU;
         end
     endtask
 
-task load_program_full_dependencies;
+    task load_program_full_dependencies;
         begin
             cpu.DMemory[0] = 32'd10;
 
             cpu.IMemory[0]  = 32'h00002083; // lw   x1, 0(x0)      # x1 = mem[0]
-            cpu.IMemory[1]  = 32'h0000_0013; // nop
-            cpu.IMemory[2]  = 32'h0000_0013; // nop
+            cpu.IMemory[1]  = 32'h00508113; // addi x2, x1, 5      # x2 = x1 + 5 
+            cpu.IMemory[2]  = 32'h00110193; // addi x3, x2, 1      # x3 = x2 + 1 
+            cpu.IMemory[3]  = 32'h00302223; // sw   x3, 4(x0)      # mem[1] = x3 
+            cpu.IMemory[4]  = 32'h00a18213; // addi x4, x3, 10     # x4 = x3 + 10 
+            cpu.IMemory[5]  = 32'h00420663; // beq  x4, x4, label  # jump 3 inst. (offset 12)
+            cpu.IMemory[6]  = 32'h06300293; // addi x5, x0, 99     # flushado
+            cpu.IMemory[7]  = 32'h05800313; // addi x6, x0, 88     # flushado
             
-            cpu.IMemory[3]  = 32'h00508113; // addi x2, x1, 5      # x2 = x1 + 5 (depende de x1)
-            cpu.IMemory[4]  = 32'h0000_0013; // nop
-            cpu.IMemory[5]  = 32'h0000_0013; // nop
+            // label: (PC = 8 * 4 = 32)
+            cpu.IMemory[8]  = 32'h00120393; // addi x7, x4, 1      # x7 = resultado final
             
-            cpu.IMemory[6]  = 32'h00110193; // addi x3, x2, 1      # x3 = x2 + 1 (depende de x2)
-            cpu.IMemory[7]  = 32'h0000_0013; // nop
-            cpu.IMemory[8]  = 32'h0000_0013; // nop
-            
-            cpu.IMemory[9]  = 32'h00302223; // sw   x3, 4(x0)      # mem[1] = x3 (depende de x3)
-            
-            // O próximo 'addi' também lê 'x3', mas o 'sw' não escreve em registradores. 
-            // A instrução que escreveu em 'x3' foi a de índice 6, que já está a 4 ciclos de distância. 
-            // Portanto, não há hazard aqui e não precisamos de NOPs.
-            cpu.IMemory[10] = 32'h00a18213; // addi x4, x3, 10     # x4 = x3 + 10 
-            cpu.IMemory[11] = 32'h0000_0013; // nop
-            cpu.IMemory[12] = 32'h0000_0013; // nop
-            
-            // PC do beq agora é 13 * 4 = 52. 
-            cpu.IMemory[13] = 32'h00420663; // beq  x4, x4, label  # sempre tomado (depende de x4)
-            cpu.IMemory[14] = 32'h06300293; // addi x5, x0, 99     # deve ser flushado
-            cpu.IMemory[15] = 32'h05800313; // addi x6, x0, 88     # pode ser flushado
-            
-            // label: (O PC do label agora é 16 * 4 = 64)
-            cpu.IMemory[16] = 32'h00120393; // addi x7, x4, 1      # x7 = resultado final
-            
-            cpu.IMemory[17] = 32'h0000000b; // halt                # Instrução para finalizar a simulação
+            cpu.IMemory[9]  = 32'h0000000b; // halt
         end
     endtask
 

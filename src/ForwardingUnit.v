@@ -28,8 +28,29 @@ module ForwardingUnit (
         forwardA = NO_FORWARD;
         forwardB = NO_FORWARD;
 
-        // TODO: implementar lógica do forwarding para operando A aqui!!!
-        // TODO: implementar lógica do forwarding para operando B aqui!!!
+        // Lógica de Forwarding para o operando A (idex_rs1)
+        if ((exmem_rd != 5'd0) && (exmem_rd == idex_rs1) && (exmem_op == ALUop)) begin
+            // Prioridade 1: Encaminhamento do estágio EX/MEM (apenas para ALU, pois LW ainda não tem o dado)
+            forwardA = FROM_MEM;
+        end else if ((memwb_rd != 5'd0) && (memwb_rd == idex_rs1)) begin
+            // Prioridade 2: Encaminhamento do estágio MEM/WB
+            if (memwb_op == ALUop) begin
+                forwardA = FROM_WB_ALU;
+            end else if (memwb_op == LW) begin
+                forwardA = FROM_WB_LD;
+            end
+        end
+
+        // Lógica de Forwarding para o operando B (idex_rs2)
+        if ((exmem_rd != 5'd0) && (exmem_rd == idex_rs2) && (exmem_op == ALUop)) begin
+            forwardB = FROM_MEM;
+        end else if ((memwb_rd != 5'd0) && (memwb_rd == idex_rs2)) begin
+            if (memwb_op == ALUop) begin
+                forwardB = FROM_WB_ALU;
+            end else if (memwb_op == LW) begin
+                forwardB = FROM_WB_LD;
+            end
+        end
     end
 
 endmodule
