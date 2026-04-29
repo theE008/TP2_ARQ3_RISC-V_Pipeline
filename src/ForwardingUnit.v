@@ -30,7 +30,7 @@ module ForwardingUnit (
 
         // Lógica de Forwarding para o operando A (idex_rs1)
         if ((exmem_rd != 5'd0) && (exmem_rd == idex_rs1) && (exmem_op == ALUop)) begin
-            // Prioridade 1: Encaminhamento do estágio EX/MEM (apenas para ALU, pois LW ainda não tem o dado)
+            // Prioridade 1: Encaminhamento do estágio EX/MEM
             forwardA = FROM_MEM;
         end else if ((memwb_rd != 5'd0) && (memwb_rd == idex_rs1)) begin
             // Prioridade 2: Encaminhamento do estágio MEM/WB
